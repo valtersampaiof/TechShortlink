@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Encurtador de links</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="card">
+    <h1>Encurte seus links</h1>
+    <p class="subtitle">Cole uma URL longa e receba um link curto para compartilhar.</p>
+
+    <form id="form">
+      <input id="url" type="url" placeholder="https://exemplo.com/uma/url/bem/longa" required autofocus>
+      <button type="submit">Encurtar</button>
+    </form>
+
+    <p id="error" class="error" hidden></p>
+
+    <div id="result" class="result" hidden>
+      <a id="short" target="_blank" rel="noopener"></a>
+      <button id="copy" type="button">Copiar</button>
+    </div>
+  </main>
+
+  <script src="/script.js"></script>
+</body>
+</html>

@@ -31,7 +31,7 @@ async function startApp({ createLimit = 100, redirectLimit = 100, cacheSize = 10
     });
   const open = (code) => fetch(`${base}/${code}`, { redirect: 'manual' });
 
-  return { db, cache, server, shorten, open };
+  return { db, cache, server, base, shorten, open };
 }
 
 test('base62', () => {
@@ -81,6 +81,21 @@ test('rejeita URL inválida e esquemas perigosos', async (t) => {
   for (const url of ['nao-e-url', 'javascript:alert(1)', 'ftp://example.com', undefined]) {
     assert.equal((await shorten(url)).status, 400, String(url));
   }
+});
+
+test('serve o site: página, estilo e script', async (t) => {
+  const { server, base } = await startApp();
+  t.after(() => server.close());
+
+  const page = await fetch(`${base}/?utm_source=teste`);
+  assert.equal(page.status, 200);
+  assert.match(page.headers.get('content-type'), /text\/html/);
+  assert.match(await page.text(), /Encurte seus links/);
+
+  const css = await fetch(`${base}/style.css`);
+  assert.match(css.headers.get('content-type'), /text\/css/);
+  const js = await fetch(`${base}/script.js`);
+  assert.match(js.headers.get('content-type'), /javascript/);
 });
 
 test('código inexistente retorna 404', async (t) => {
