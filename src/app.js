@@ -1,25 +1,46 @@
 import http from 'node:http';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 const MAX_URL_LENGTH = 2048;
 const MAX_BODY_BYTES = 10_000;
+
+// Lista fechada dos arquivos do site: rota -> [arquivo em public/, Content-Type].
+// Só serve o que está aqui, então ninguém consegue pedir "/../src/db.js".
+const PUBLIC_DIR = path.join(import.meta.dirname, '..', 'public');
+const STATIC_FILES = new Map([
+  ['/', ['index.html', 'text/html; charset=utf-8']],
+  ['/style.css', ['style.css', 'text/css; charset=utf-8']],
+  ['/script.js', ['script.js', 'text/javascript; charset=utf-8']],
+]);
 
 // Recebe tudo de que precisa por parâmetro (banco, cache, limiters),
 // o que facilita trocar por versões de teste.
 export function createApp({ db, cache, limiters, baseUrl }) {
   return http.createServer(async (req, res) => {
     const ip = req.socket.remoteAddress;
+    const route = req.url.split('?')[0]; // ignora ?utm_source=... e afins
 
-    if (req.method === 'POST' && req.url === '/shorten') {
+    if (req.method === 'GET' && STATIC_FILES.has(route)) {
+      return serveStatic(res, ...STATIC_FILES.get(route));
+    }
+
+    if (req.method === 'POST' && route === '/shorten') {
       return shorten(req, res, ip);
     }
 
-    const match = req.method === 'GET' && req.url.match(/^\/([0-9a-zA-Z]+)$/);
+    const match = req.method === 'GET' && route.match(/^\/([0-9a-zA-Z]+)$/);
     if (match) {
       return redirect(res, ip, match[1]);
     }
 
     json(res, 404, { error: 'not found' });
   });
+
+  async function serveStatic(res, file, contentType) {
+    res.writeHead(200, { 'Content-Type': contentType });
+    res.end(await readFile(path.join(PUBLIC_DIR, file)));
+  }
 
   async function shorten(req, res, ip) {
     if (isLimited(res, limiters.create, ip)) return;
