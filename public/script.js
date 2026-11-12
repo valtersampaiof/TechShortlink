@@ -1,4 +1,4 @@
-const form = document.querySelector('#form');
+﻿const form = document.querySelector('#form');
 const input = document.querySelector('#url');
 const submit = form.querySelector('button');
 const error = document.querySelector('#error');
@@ -6,28 +6,28 @@ const result = document.querySelector('#result');
 const short = document.querySelector('#short');
 const copy = document.querySelector('#copy');
 
-// Chama a API do encurtador e devolve o link curto, ou lança um Error com
-// uma mensagem pronta para mostrar ao usuário.
+// Chama a API do TechShortlink e devolve o link curto, ou lanÃ§a um Error com
+// uma mensagem pronta para mostrar ao usuÃ¡rio.
 async function shorten(url) {
   const res = await fetch('/shorten', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url }),
   }).catch(() => {
-    throw new Error('Não foi possível falar com o servidor.');
+    throw new Error('NÃ£o foi possÃ­vel falar com o servidor.');
   });
 
   if (res.status === 429) {
     throw new Error(`Muitas tentativas. Tente de novo em ${res.headers.get('Retry-After')}s.`);
   }
   if (!res.ok) {
-    throw new Error('Informe uma URL válida, começando com http:// ou https://.');
+    throw new Error('Informe uma URL vÃ¡lida, comeÃ§ando com http:// ou https://.');
   }
   return (await res.json()).shortUrl;
 }
 
 form.addEventListener('submit', async (event) => {
-  event.preventDefault(); // evita o recarregamento da página
+  event.preventDefault(); // evita o recarregamento da pÃ¡gina
   error.hidden = true;
   result.hidden = true;
   submit.disabled = true;
